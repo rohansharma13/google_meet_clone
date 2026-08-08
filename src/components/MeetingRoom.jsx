@@ -13,7 +13,7 @@ function buildInitialParticipant(name, id, isYou = false) {
     id,
     name,
     isYou,
-    muted: Math.random() < 0.45,
+    muted: true,
     videoOff: Math.random() < 0.35,
     joinedAt: Date.now(),
   };

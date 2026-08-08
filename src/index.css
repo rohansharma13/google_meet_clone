@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Google Sans', Roboto, Arial, sans-serif;
+  background: #202124;
+  color: #fff;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #2d2e31;
+}
+::-webkit-scrollbar-thumb {
+  background: #5f6368;
+  border-radius: 3px;
+}
+
+/* Participant tile animations */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes joinPulse {
+  0% { box-shadow: 0 0 0 0 rgba(26, 115, 232, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(26, 115, 232, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(26, 115, 232, 0); }
+}
+
+@keyframes speakPulse {
+  0% { box-shadow: 0 0 0 0 rgba(52, 168, 83, 0.8); }
+  70% { box-shadow: 0 0 0 6px rgba(52, 168, 83, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(52, 168, 83, 0); }
+}
+
+@keyframes toastSlide {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.tile-enter {
+  animation: fadeInScale 0.4s ease forwards;
+}
+
+.join-pulse {
+  animation: joinPulse 0.8s ease;
+}
+
+.speak-pulse {
+  animation: speakPulse 1.2s ease infinite;
+}
+
+.toast-enter {
+  animation: toastSlide 0.3s ease forwards;
+}
+
+@keyframes speakBar {
+  from { height: 3px; }
+  to   { height: 14px; }
+}
+
+/* Noise overlay for camera tiles */
+.noise-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.04;
+}
+
+/* Google Meet gradient backgrounds for tiles */
+.bg-gradient-meet-1 { background: linear-gradient(135deg, #1a237e 0%, #283593 100%); }
+.bg-gradient-meet-2 { background: linear-gradient(135deg, #004d40 0%, #00695c 100%); }
+.bg-gradient-meet-3 { background: linear-gradient(135deg, #4a148c 0%, #6a1b9a 100%); }
+.bg-gradient-meet-4 { background: linear-gradient(135deg, #b71c1c 0%, #c62828 100%); }
+.bg-gradient-meet-5 { background: linear-gradient(135deg, #e65100 0%, #ef6c00 100%); }
+.bg-gradient-meet-6 { background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%); }
+.bg-gradient-meet-7 { background: linear-gradient(135deg, #01579b 0%, #0277bd 100%); }
+.bg-gradient-meet-8 { background: linear-gradient(135deg, #37474f 0%, #455a64 100%); }

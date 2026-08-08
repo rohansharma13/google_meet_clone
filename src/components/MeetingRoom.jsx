@@ -145,38 +145,53 @@ export default function MeetingRoom() {
   }, [addParticipant]);
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden" style={{ background: '#202124' }}>
+    <div style={{ display:'flex', flexDirection:'column', height:'100vh', width:'100vw', overflow:'hidden', background:'#1C1C1C' }}>
       {/* Top Bar */}
       <TopBar participantCount={participants.length} duration={duration} />
 
       {/* Main grid area */}
-      <div className="flex-1 overflow-hidden relative">
+      <div style={{ flex:1, overflow:'hidden', position:'relative' }}>
         <ParticipantsGrid participants={participants} newJoinId={newJoinId} />
 
-        {/* Overflow badge — shown when more than 16 are in the call */}
-        {participants.length > 16 && (
-          <div
-            className="absolute top-3 right-3 px-3 py-1.5 rounded-full text-xs font-medium text-white"
-            style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.12)' }}
-          >
-            +{participants.length - 16} more in this call
+        {/* Overflow badge — people beyond the 25 shown on screen */}
+        {participants.length > 25 && (
+          <div style={{
+            position:'absolute', top:12, right:12,
+            background:'rgba(0,0,0,0.72)', backdropFilter:'blur(6px)',
+            border:'1px solid rgba(255,255,255,0.1)',
+            borderRadius:8, padding:'5px 12px',
+            color:'#fff', fontSize:12, fontWeight:500,
+            display:'flex', alignItems:'center', gap:6,
+          }}>
+            <svg viewBox="0 0 24 24" fill="#2D8CFF" width="13" height="13">
+              <path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+            </svg>
+            +{participants.length - 25} more participants
           </div>
         )}
 
-        {/* Status pill */}
-        <div
-          className="absolute top-3 left-3 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs text-white"
-          style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
-        >
+        {/* Status pill — bottom-left Zoom style */}
+        <div style={{
+          position:'absolute', bottom:12, left:12,
+          background:'rgba(0,0,0,0.7)', backdropFilter:'blur(5px)',
+          border:'1px solid rgba(255,255,255,0.1)',
+          borderRadius:8, padding:'5px 12px',
+          display:'flex', alignItems:'center', gap:7,
+          fontSize:12, color:'#fff',
+        }}>
           {joinPhase !== 'done' ? (
             <>
-              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              <span>{participants.length} participants • People joining...</span>
+              <span style={{ width:7, height:7, borderRadius:'50%', background:'#23D96C', display:'inline-block',
+                animation:'pulse 1.2s ease-in-out infinite' }} />
+              <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}`}</style>
+              <span style={{ fontWeight:500 }}>{participants.length} participants</span>
+              <span style={{ color:'#888' }}>•</span>
+              <span style={{ color:'#23D96C' }}>People joining...</span>
             </>
           ) : (
             <>
-              <span className="w-2 h-2 rounded-full bg-blue-400" />
-              <span>{participants.length} participants</span>
+              <span style={{ width:7, height:7, borderRadius:'50%', background:'#2D8CFF', display:'inline-block' }} />
+              <span style={{ fontWeight:500 }}>{participants.length} participants</span>
             </>
           )}
         </div>

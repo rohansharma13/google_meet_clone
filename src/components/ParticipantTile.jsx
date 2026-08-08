@@ -1,185 +1,168 @@
 import React, { useState, useEffect } from 'react';
-import { getInitials, getTileGradient, getAvatarColor } from '../data/participants';
+import { getInitials, getAvatarColor } from '../data/participants';
 
-const MicMutedIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
-    <path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/>
+/* Zoom tile background colours — dark, muted, professional */
+const ZOOM_BG = [
+  '#1a1a2e', '#16213e', '#0f3460', '#1b1b2f',
+  '#2d132c', '#1a1a1a', '#12232e', '#203a43',
+  '#0d0d0d', '#1e272e', '#2c3e50', '#1c2833',
+  '#17202a', '#1b2631', '#212f3d', '#2e4057',
+];
+
+function getTileBg(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+  return ZOOM_BG[Math.abs(h) % ZOOM_BG.length];
+}
+
+/* Mic-muted red slash icon */
+const MutedIcon = () => (
+  <svg viewBox="0 0 24 24" fill="#F93939" width="12" height="12">
+    <path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/>
   </svg>
 );
 
-const MicOnIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
-    <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
-  </svg>
-);
-
-// Speaking bars animation
-const SpeakingBars = () => (
-  <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '16px' }}>
-    {[0, 1, 2].map((i) => (
-      <div
-        key={i}
-        style={{
-          width: '3px',
-          borderRadius: '2px',
-          backgroundColor: '#34a853',
-          animation: `speakBar 0.5s ease-in-out ${i * 0.15}s infinite alternate`,
-        }}
-      />
+/* Animated audio bars (green) shown when speaking */
+const AudioBars = () => (
+  <div style={{ display:'flex', alignItems:'flex-end', gap:2, height:14 }}>
+    {[0,1,2,3].map(i => (
+      <div key={i} style={{
+        width: 3, borderRadius: 2,
+        background: '#23D96C',
+        animation: `speakBar 0.45s ease-in-out ${i*0.1}s infinite alternate`,
+      }} />
     ))}
   </div>
 );
 
+const avatarDims = {
+  large:  { wh: 80, font: 30 },
+  normal: { wh: 64, font: 24 },
+  small:  { wh: 50, font: 19 },
+  tiny:   { wh: 38, font: 14 },
+  micro:  { wh: 30, font: 11 },
+};
+
 export default function ParticipantTile({ participant, size = 'normal', isNew = false }) {
   const [speaking, setSpeaking] = useState(false);
-  const [animateIn, setAnimateIn] = useState(isNew);
+  const [newBadge, setNewBadge] = useState(isNew);
 
+  /* Clear "joined" badge after 1.2s */
   useEffect(() => {
-    if (isNew) {
-      const t = setTimeout(() => setAnimateIn(false), 700);
-      return () => clearTimeout(t);
-    }
+    if (!isNew) return;
+    const t = setTimeout(() => setNewBadge(false), 1200);
+    return () => clearTimeout(t);
   }, [isNew]);
 
-  // Randomised speaking simulation — only for unmuted participants
+  /* Random speaking sim */
   useEffect(() => {
     if (participant.muted) return;
-    // Stagger start so not everyone "speaks" at the same time
-    const startDelay = Math.random() * 4000;
-    let interval;
-    const startTimer = setTimeout(() => {
-      interval = setInterval(() => {
-        const willSpeak = Math.random() < 0.12;
-        if (willSpeak) {
+    const delay = Math.random() * 5000;
+    let iv;
+    const st = setTimeout(() => {
+      iv = setInterval(() => {
+        if (Math.random() < 0.11) {
           setSpeaking(true);
-          setTimeout(() => setSpeaking(false), 900 + Math.random() * 1400);
+          setTimeout(() => setSpeaking(false), 800 + Math.random() * 1500);
         }
-      }, 2500 + Math.random() * 3000);
-    }, startDelay);
-    return () => { clearTimeout(startTimer); clearInterval(interval); };
+      }, 2800 + Math.random() * 2500);
+    }, delay);
+    return () => { clearTimeout(st); clearInterval(iv); };
   }, [participant.muted]);
 
-  const gradient = getTileGradient(participant.name);
-  const avatarBg  = getAvatarColor(participant.name);
-  const initials  = getInitials(participant.name);
+  const bg      = getTileBg(participant.name);
+  const avatarC = getAvatarColor(participant.name);
+  const initials = getInitials(participant.name);
+  const dim     = avatarDims[size] || avatarDims.normal;
 
-  // Avatar size: fluid based on tile size prop
-  const avatarDim = {
-    large:  { w: 88, h: 88, font: 32 },
-    normal: { w: 72, h: 72, font: 26 },
-    small:  { w: 56, h: 56, font: 20 },
-    tiny:   { w: 44, h: 44, font: 16 },
-    micro:  { w: 34, h: 34, font: 12 },
-  }[size] || { w: 64, h: 64, font: 22 };
+  const nameSize = size === 'micro' ? 9 : size === 'tiny' ? 10 : size === 'small' ? 11 : 12;
 
   return (
     <div
-      className="tile-enter"
+      className={`tile-enter ${newBadge ? 'join-ring' : ''}`}
       style={{
         position: 'relative',
-        width: '100%',
-        height: '100%',
-        borderRadius: '10px',
+        width: '100%', height: '100%',
+        background: bg,
+        borderRadius: 8,
         overflow: 'hidden',
-        background: gradient,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        /* Zoom speaking = thick green border */
         border: speaking
-          ? '2px solid #34a853'
-          : animateIn
-          ? '2px solid #1a73e8'
+          ? '2px solid #23D96C'
+          : newBadge
+          ? '2px solid #2D8CFF'
           : '2px solid transparent',
-        transition: 'border-color 0.25s ease',
-        boxShadow: speaking
-          ? '0 0 0 3px rgba(52,168,83,0.35)'
-          : animateIn
-          ? '0 0 0 3px rgba(26,115,232,0.45)'
-          : 'none',
+        transition: 'border-color 0.2s ease',
       }}
     >
-      {/* Gradient avatar circle */}
-      <div
-        style={{
-          width: avatarDim.w,
-          height: avatarDim.h,
-          borderRadius: '50%',
-          backgroundColor: avatarBg,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: avatarDim.font,
-          fontWeight: 600,
-          color: '#fff',
-          userSelect: 'none',
-          letterSpacing: '0.5px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-          flexShrink: 0,
-        }}
-      >
+      {/* Avatar circle */}
+      <div style={{
+        width: dim.wh, height: dim.wh, borderRadius: '50%',
+        background: avatarC,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: dim.font, fontWeight: 700, color: '#fff',
+        userSelect: 'none', letterSpacing: '0.5px',
+        flexShrink: 0,
+      }}>
         {initials}
       </div>
 
-      {/* Bottom name bar — gradient scrim */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          padding: '20px 10px 7px',
-          background: 'linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 100%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 6,
-        }}
-      >
-        {/* Speaking bars OR mic icon on left */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-          {speaking ? (
-            <SpeakingBars />
-          ) : (
-            <span style={{ color: participant.muted ? '#f28b82' : 'rgba(255,255,255,0.7)' }}>
-              {participant.muted ? <MicMutedIcon /> : <MicOnIcon />}
-            </span>
-          )}
+      {/* Bottom name bar */}
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        padding: '18px 8px 6px',
+        background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
+        display: 'flex', alignItems: 'center', gap: 5,
+      }}>
+        {/* Mic status / audio bars */}
+        <div style={{ flexShrink: 0, display:'flex', alignItems:'center' }}>
+          {participant.muted
+            ? <MutedIcon />
+            : speaking
+            ? <AudioBars />
+            : <svg viewBox="0 0 24 24" fill="rgba(255,255,255,0.5)" width="12" height="12">
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
+              </svg>
+          }
         </div>
 
         {/* Name */}
-        <span
-          style={{
-            flex: 1,
-            color: '#fff',
-            fontWeight: 500,
-            fontSize: size === 'micro' ? 10 : size === 'tiny' ? 11 : size === 'small' ? 12 : 13,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            textShadow: '0 1px 3px rgba(0,0,0,0.8)',
-          }}
-        >
+        <span style={{
+          flex: 1, color: '#fff', fontWeight: 500,
+          fontSize: nameSize, whiteSpace: 'nowrap',
+          overflow: 'hidden', textOverflow: 'ellipsis',
+          textShadow: '0 1px 4px rgba(0,0,0,0.9)',
+        }}>
           {participant.isYou ? `${participant.name} (You)` : participant.name}
         </span>
       </div>
 
-      {/* "NEW" badge briefly on join */}
-      {animateIn && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 8,
-            right: 8,
-            background: '#1a73e8',
-            color: '#fff',
-            fontSize: 10,
-            fontWeight: 600,
-            borderRadius: 4,
-            padding: '2px 6px',
-            letterSpacing: '0.5px',
-          }}
-        >
+      {/* "Joined" flash badge */}
+      {newBadge && (
+        <div style={{
+          position:'absolute', top:7, right:7,
+          background:'#2D8CFF', color:'#fff',
+          fontSize: 9, fontWeight: 700,
+          borderRadius: 4, padding:'2px 6px',
+          letterSpacing:'0.4px',
+        }}>
           JOINED
+        </div>
+      )}
+
+      {/* Top-right video-off indicator */}
+      {participant.videoOff && (
+        <div style={{
+          position:'absolute', top:7, left:7,
+          background:'rgba(0,0,0,0.55)', borderRadius:4,
+          padding:'2px 5px', display:'flex', alignItems:'center',
+        }}>
+          <svg viewBox="0 0 24 24" fill="#aaa" width="11" height="11">
+            <path d="M21 6.5l-4-4-1.45 1.45L17 5.41V9l4 4V6.5zM3.27 2L2 3.27 4.73 6H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.21 0 .39-.08.54-.18L19.73 21 21 19.73 3.27 2zM15 17H5V7.27l10 10V17z"/>
+          </svg>
         </div>
       )}
     </div>
